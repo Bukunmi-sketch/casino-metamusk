@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { ethers } from 'ethers';
 import metamusk from "../assets/download.jpeg"
+import casino from "../assets/casino.png"
 
 const EthereumBalance = () => {
   const [account, setAccount] = useState(null);
@@ -127,7 +128,7 @@ const EthereumBalance = () => {
 
   return (
     <div className='container'>
-        <img src={metamusk} alt="" />
+        <img className='img' src={metamusk} alt="" />
       {account ? (
         <div className='input-box'>
           <p>Connected Account: {account}</p>
@@ -157,7 +158,9 @@ const EthereumBalance = () => {
             </div>
           )}
         </div>
+        
       )}
+      <img src={casino} alt="" loading='lazy' />
     </div>
   );
 };
