@@ -10,7 +10,7 @@ const EthereumBalance = () => {
     const [inputAddress, setInputAddress] = useState('');
     const [useMetaMask, setUseMetaMask] = useState(false);
 
-
+    // const provider = new ethers.providers.Web3Provider(window.ethereum);
     
     useEffect(() => {
         // Connect to MetaMask on component mount
@@ -33,7 +33,8 @@ const EthereumBalance = () => {
         if (window.ethereum) {
             window.ethereum.request({ method: 'eth_requestAccounts' })
             .then(result => {
-                showError([result[0]])
+                setAccount([result[0]]);
+                // showError([result[0]])
             })
         //   try {
         //     // Request account access if needed
