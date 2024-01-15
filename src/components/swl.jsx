@@ -57,24 +57,69 @@ const EthereumBalance = () => {
         }
       };
 
+    // const changeAccount = async () => {
+    //     try {
+    //         // Request account access if needed
+    //         await window.ethereum.request({ method: 'eth_requestAccounts' });
+    //         const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //         const signer = provider.getSigner();
+
+    //         // Get the new connected account address
+    //         const newAccount = await signer.getAddress();
+    //         setAccount(newAccount);
+
+    //         // Get the new account balance
+    //         const newBalance = await signer.getBalance();
+    //         setBalance(ethers.utils.formatEther(newBalance));
+    //     } catch (error) {
+    //         showError('Error changing account:', error.message);
+    //     }
+    // };
+
     const changeAccount = async () => {
         try {
-            // Request account access if needed
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
-
-            // Get the new connected account address
-            const newAccount = await signer.getAddress();
+          // Request account access if needed
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+      
+          // Get the connected account address
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      
+          if (accounts.length > 0) {
+            const newAccount = accounts[0];
             setAccount(newAccount);
-
+      
             // Get the new account balance
-            const newBalance = await signer.getBalance();
-            setBalance(ethers.utils.formatEther(newBalance));
+            const newBalance = await getBalance(newAccount);
+            setBalance(newBalance);
+          } else {
+            showError('No accounts found after account access.');
+          }
         } catch (error) {
-            showError('Error changing account:', error.message);
+          showError(error);
         }
-    };
+      };
+
+
+      const getBalance = async (address) => {
+        try {
+          const result = await window.ethereum.request({
+            method: 'eth_getBalance',
+            params: [address, 'latest'], // 'latest' for the latest block
+          });
+      
+          // Convert hexadecimal balance to decimal and format in ETH
+          const balanceInWei = parseInt(result, 16);
+          const balanceInEth = balanceInWei / 1e18; // Convert Wei to ETH
+      
+          return balanceInEth.toFixed(6); // Adjust the precision as needed
+        } catch (error) {
+          console.error('Error getting balance:', error.message);
+          // You can handle the error or return a default value
+          return '0.000000';
+        }
+      };
+      
+      
 
     // const accountChangedHandler = async (newAccount) => {
     //     const address = await newAccount.getAddress();
@@ -90,37 +135,80 @@ const EthereumBalance = () => {
 
     const connectToCustomAddress = async () => {
         try {
-
-            // Check if the address is ineligible
-            if (isIneligibleAddress(inputAddress)) {
-                showError('Ineligible Wallet Address', 'This wallet address is ineligible for use.');
-                return;
-            }
-            // Validate the provided wallet address
-            if (!inputAddress || !isValidAddress(inputAddress)) {
-                showError('Invalid Wallet Address', 'Please enter a valid Ethereum wallet address.');
-                return;
-            }
-
-            // Check if the address has insufficient funds
-            // const hasSufficientFunds = await hasSufficientFundsInWallet(inputAddress);
-            // if (!hasSufficientFunds) {
-            //     showError('Insufficient Funds', 'The wallet address has insufficient funds.');
-            //     return;
-            // }
-
-
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const connectedAccount = inputAddress; // Use the inputAddress directly
-            setAccount(connectedAccount);
-
-            // Get the account balance for the custom address
-            const connectedBalance = await provider.getBalance(inputAddress);
-            setBalance(ethers.utils.formatEther(connectedBalance));
+          // Check if the address is ineligible
+          if (isIneligibleAddress(inputAddress)) {
+            showError('Ineligible Wallet Address', 'This wallet address is ineligible for use.');
+            return;
+          }
+      
+          // Validate the provided wallet address
+          if (!inputAddress || !isValidAddress(inputAddress)) {
+            showError('Invalid Wallet Address', 'Please enter a valid Ethereum wallet address.');
+            return;
+          }
+      
+          // Check if the address has insufficient funds
+          // Uncomment and modify the following lines as needed
+          // const hasSufficientFunds = await hasSufficientFundsInWallet(inputAddress);
+          // if (!hasSufficientFunds) {
+          //   showError('Insufficient Funds', 'The wallet address has insufficient funds.');
+          //   return;
+          // }
+      
+          // Request account access if needed
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+      
+          // Fetch the account balance for the custom address
+          const result = await window.ethereum.request({
+            method: 'eth_getBalance',
+            params: [inputAddress, 'latest'], // 'latest' for the latest block
+          });
+      
+          // Convert hexadecimal balance to decimal and format in ETH
+          const connectedBalanceInWei = parseInt(result, 16);
+          const connectedBalanceInEth = connectedBalanceInWei / 1e18;
+      
+          // Update the state with the connected account and balance
+          setAccount(inputAddress);
+          setBalance(connectedBalanceInEth.toFixed(6)); // Adjust the precision as needed
         } catch (error) {
-            showError('Error connecting to custom address:', error.message);
+          showError('Error connecting to custom address:', error.message);
         }
-    };
+      };
+
+    // const connectToCustomAddress = async () => {
+    //     try {
+
+    //         // Check if the address is ineligible
+    //         if (isIneligibleAddress(inputAddress)) {
+    //             showError('Ineligible Wallet Address', 'This wallet address is ineligible for use.');
+    //             return;
+    //         }
+    //         // Validate the provided wallet address
+    //         if (!inputAddress || !isValidAddress(inputAddress)) {
+    //             showError('Invalid Wallet Address', 'Please enter a valid Ethereum wallet address.');
+    //             return;
+    //         }
+
+    //         // Check if the address has insufficient funds
+    //         // const hasSufficientFunds = await hasSufficientFundsInWallet(inputAddress);
+    //         // if (!hasSufficientFunds) {
+    //         //     showError('Insufficient Funds', 'The wallet address has insufficient funds.');
+    //         //     return;
+    //         // }
+
+
+    //         const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //         const connectedAccount = inputAddress; // Use the inputAddress directly
+    //         setAccount(connectedAccount);
+
+    //         // Get the account balance for the custom address
+    //         const connectedBalance = await provider.getBalance(inputAddress);
+    //         setBalance(ethers.utils.formatEther(connectedBalance));
+    //     } catch (error) {
+    //         showError('Error connecting to custom address:', error.message);
+    //     }
+    // };
 
     const isIneligibleAddress = (address) => {
         // Check if the address is in the list of ineligible addresses
@@ -163,7 +251,7 @@ const EthereumBalance = () => {
                 <div className='input-box'>
                     <p>Connected Account: {account}</p>
                     <p>Balance: {balance} ETH</p>
-                    <button onClick={changeAccount}>Change Account</button>
+                    <button onClick={changeAccount}>View Balance</button>
                 </div>
             ) : (
                 <div className='container-box' >
